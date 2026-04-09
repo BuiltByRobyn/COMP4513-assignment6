@@ -1,0 +1,10 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:63446",
+"RedirectUrl": "",
+"LaunchCommand": "npm run dev",
+"WorkingDirectory": "C:\\Users\\saxop\\OneDrive\\Desktop\\FSWD\\Term 4\\C#\\COMP 4513\\week13\\assignment6\\assignment6.Server\\..\\assignment6.client",
+"MaxTimeoutInSeconds": "120",
+"KeepRunning": "false"
+}
+}

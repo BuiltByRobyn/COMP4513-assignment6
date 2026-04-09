@@ -1,6 +1,12 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
+using assignment6.Server.Data;
+using assignment6.Server.Models;
 
-// Add services to the container.
+
+var builder = WebApplication.CreateBuilder(args);
+    
+builder.Services.AddDbContext<PlaylistDb>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("playlistdb")));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
