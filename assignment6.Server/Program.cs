@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using assignment6.Server.Data;
 using assignment6.Server.Models;
+using System.Security.Cryptography.X509Certificates;
+using System.Data;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +26,96 @@ using (var scope = app.Services.CreateScope())
 app.MapGet("/api/playlists", async (PlaylistDb db) =>
 {
     return await db.Playlists.Include(p=>p.Tracks).ToListAsync();
+});
+
+app.MapGet("/api/playlists/{id}", async (int id, PlaylistDb db) =>
+{
+    return await db.Playlists
+    .Include(p=>p.Tracks)
+    .SingleOrDefaultAsync(p => p.Id == id) is Playlist playlist
+    ? Results.Ok(playlist) 
+    : Results.NotFound();
+});
+
+app.MapPost("/api/playlists", async(PlaylistDTO newPlaylist, PlaylistDb db) =>
+{
+    var playlist = new Playlist { Title = newPlaylist.Title };
+    db.Playlists.Add(playlist);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/playlists/{playlist.Id}", playlist);
+});
+
+app.MapPut("/api/playlists/{id}", async (int id, Playlist updatedPlaylist, PlaylistDb db) =>
+{
+    var playlist = await db.Playlists.FindAsync(id);
+
+    if (playlist is null)
+        return Results.NotFound();
+
+    playlist.Title = updatedPlaylist.Title;
+
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.MapDelete("/api/playlists/{id}", async (int id, PlaylistDb db) =>
+{
+    if (await db.Playlists.FindAsync(id) is Playlist playlist)
+    {
+        db.Playlists.Remove(playlist);
+        await db.SaveChangesAsync();
+        return Results.NoContent();
+    }
+    return Results.NotFound();
+});
+
+app.MapGet("/api/tracks", async (PlaylistDb db) =>
+{
+    return await db.Tracks
+    .Include(t => t.Playlist)
+    .ToListAsync();
+});
+
+app.MapGet("/api/tracks/{id}", async (int id, PlaylistDb db) =>
+{
+    return await db.Tracks
+    .Include(t => t.Playlist)
+    .SingleOrDefaultAsync(t => t.Id == id) is Track track
+    ? Results.Ok(track)
+    : Results.NotFound();
+});
+
+app.MapPost("api/tracks", async (Track track, PlaylistDb db) =>
+{
+    db.Tracks.Add(track);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/tracks/{track.Id}", track);
+});
+
+app.MapPut("/api/tracks/{id}", async (int id, Track updatedTrack, PlaylistDb db) =>
+{
+    var track = await db.Tracks.FindAsync(id);
+
+    if (track is null)
+        return Results.NotFound();
+
+    track.Title = updatedTrack .Title;
+    track.Artist = updatedTrack.Artist;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+
+});
+
+app.MapDelete("/api/tracks/{id}", async (int id, PlaylistDb db) =>
+{
+    if (await db.Tracks.FindAsync(id) is Track track)
+    {
+        db.Tracks.Remove(track);
+        await db.SaveChangesAsync();
+        return Results.NoContent();
+    }
+    return Results.NotFound();
 });
 
 app.UseDefaultFiles();
