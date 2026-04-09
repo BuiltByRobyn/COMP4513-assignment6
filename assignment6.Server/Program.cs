@@ -15,6 +15,17 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    SeedData.Initialize(services);
+}
+
+app.MapGet("/api/playlists", async (PlaylistDb db) =>
+{
+    return await db.Playlists.Include(p=>p.Tracks).ToListAsync();
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
